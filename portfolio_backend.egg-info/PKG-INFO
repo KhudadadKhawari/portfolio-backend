@@ -5,16 +5,16 @@ Summary: FastAPI backend for the portfolio CI/CD demo platform
 Requires-Python: >=3.11
 Requires-Dist: alembic==1.13.2
 Requires-Dist: boto3==1.34.144
-Requires-Dist: fastapi==0.111.1
+Requires-Dist: fastapi==0.136.3
 Requires-Dist: psycopg[binary]==3.2.1
 Requires-Dist: pydantic-settings==2.3.4
-Requires-Dist: PyJWT==2.8.0
-Requires-Dist: python-multipart==0.0.9
+Requires-Dist: PyJWT==2.13.0
+Requires-Dist: python-multipart==0.0.27
 Requires-Dist: SQLAlchemy==2.0.31
 Requires-Dist: uvicorn[standard]==0.30.1
 Provides-Extra: dev
 Requires-Dist: httpx==0.27.0; extra == "dev"
 Requires-Dist: pip-audit==2.7.3; extra == "dev"
-Requires-Dist: pytest==8.2.2; extra == "dev"
+Requires-Dist: pytest==9.0.3; extra == "dev"
 Requires-Dist: pytest-cov==5.0.0; extra == "dev"
 Requires-Dist: ruff==0.5.1; extra == "dev"

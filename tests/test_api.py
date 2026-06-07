@@ -43,4 +43,4 @@ def test_admin_required_for_writes(client):
             "published": True,
         },
     )
-    assert response.status_code == 403
+    assert response.status_code == 401
