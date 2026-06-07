@@ -13,6 +13,13 @@ router = APIRouter(prefix="/blog", tags=["blog"])
 DbSession = Annotated[Session, Depends(get_db)]
 AdminUser = Annotated[str, Depends(require_admin)]
 BLOG_POST_NOT_FOUND = "Blog post not found"
+BLOG_POST_SLUG_EXISTS = "Blog post slug already exists"
+
+
+def ensure_blog_post_slug_available(db: Session, slug: str, post_id: int | None = None) -> None:
+    existing_post = db.scalar(select(BlogPost).where(BlogPost.slug == slug))
+    if existing_post is not None and existing_post.id != post_id:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=BLOG_POST_SLUG_EXISTS)
 
 
 @router.get("", response_model=list[BlogPostRead])
@@ -36,6 +43,7 @@ def create_post(
     db: DbSession,
     _: AdminUser,
 ) -> BlogPost:
+    ensure_blog_post_slug_available(db, payload.slug)
     post = BlogPost(**payload.model_dump())
     db.add(post)
     db.commit()
@@ -53,6 +61,8 @@ def update_post(
     post = db.get(BlogPost, post_id)
     if post is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=BLOG_POST_NOT_FOUND)
+    if payload.slug is not None:
+        ensure_blog_post_slug_available(db, payload.slug, post_id=post.id)
     for key, value in payload.model_dump(exclude_unset=True).items():
         setattr(post, key, value)
     db.commit()

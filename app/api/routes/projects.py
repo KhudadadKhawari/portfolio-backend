@@ -13,6 +13,13 @@ router = APIRouter(prefix="/projects", tags=["projects"])
 DbSession = Annotated[Session, Depends(get_db)]
 AdminUser = Annotated[str, Depends(require_admin)]
 PROJECT_NOT_FOUND = "Project not found"
+PROJECT_SLUG_EXISTS = "Project slug already exists"
+
+
+def ensure_project_slug_available(db: Session, slug: str, project_id: int | None = None) -> None:
+    existing_project = db.scalar(select(Project).where(Project.slug == slug))
+    if existing_project is not None and existing_project.id != project_id:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=PROJECT_SLUG_EXISTS)
 
 
 @router.get("", response_model=list[ProjectRead])
@@ -38,6 +45,7 @@ def create_project(
     db: DbSession,
     _: AdminUser,
 ) -> Project:
+    ensure_project_slug_available(db, payload.slug)
     project = Project(**payload.model_dump())
     db.add(project)
     db.commit()
@@ -55,6 +63,8 @@ def update_project(
     project = db.get(Project, project_id)
     if project is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=PROJECT_NOT_FOUND)
+    if payload.slug is not None:
+        ensure_project_slug_available(db, payload.slug, project_id=project.id)
     for key, value in payload.model_dump(exclude_unset=True).items():
         setattr(project, key, value)
     db.commit()
